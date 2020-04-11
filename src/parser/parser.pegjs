@@ -13,17 +13,17 @@
 		}
 		return node;
 	}
+	// transform from pathes to nested path
 	function transformExpr(expr, pathes) {
-		// transform from a path list to nested pathes
-		let parent = expr;
 		if (pathes.length != 0) {
-				for (const path of pathes.reverse()) {
+			let parent = expr;
+			for (const path of pathes.reverse()) {
 				parent.path = path || null;
 				parent = parent.path;
 			}
 		}
 		else {
-			parent.path = null;
+			expr.path = null;
 		}
 		return expr;
 	}
