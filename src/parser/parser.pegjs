@@ -13,6 +13,20 @@
 		}
 		return node;
 	}
+	function transformExpr(expr, pathes) {
+		// transform from a path list to nested pathes
+		let parent = expr;
+		if (pathes.length != 0) {
+				for (const path of pathes.reverse()) {
+				parent.path = path || null;
+				parent = parent.path;
+			}
+		}
+		else {
+			parent.path = null;
+		}
+		return expr;
+	}
 }
 
 // First, comments are removed by the entry rule, then the core parser is applied to the code.
@@ -52,9 +66,11 @@ Statement
 	/ Expr
 
 Expr
-	= PropRef
-	/ IndexRef
-	/ If
+	= expr:Expr_core pathes:Expr_path*
+{ return transformExpr(expr, pathes); }
+
+Expr_core
+	= If
 	/ Fn
 	/ Num
 	/ Str
@@ -85,22 +101,35 @@ Debug
 	= "<<<" _ expr:Expr
 { return createNode('debug', { expr }); }
 
+// path ----------------------------------------------------------------------------------
+
+Expr_path
+	= CallPath
+	/ PropPath
+	/ IndexPath
+
+CallPath
+	= "." name:NAME "(" _ args:CallArgs? _ ")"
+{
+	return createNode('callPath', { name, args });
+}
+
+PropPath
+	= "." name:NAME
+{
+	return createNode('propPath', { name });
+}
+
+IndexPath
+	= "[" _ i:Expr _ "]"
+{ return createNode('indexPath', { index: i }); }
+
 // general expression --------------------------------------------------------------------
 
 // variable reference
 VarRef
 	= name:NAME
 { return createNode('var', { name }); }
-
-// property reference
-PropRef
-	= head:NAME tails:("." name:NAME { return name; })+
-{ return createNode('prop', { obj: head, path: tails }); }
-
-// index reference
-IndexRef
-	= v:NAME "[" _ i:Expr _ "]"
-{ return createNode('index', { arr: v, i: i }); }
 
 // number literal
 Num
