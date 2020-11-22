@@ -44,3 +44,5 @@ Note: AiScript and [Misskey](https://github.com/syuilo/misskey) are completely i
 
 ## License
 [MIT](LICENSE)
+
+copyright (c) syuilo.
